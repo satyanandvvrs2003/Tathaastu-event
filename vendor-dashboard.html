@@ -1,125 +1,132 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vendor Dashboard | Tathaastu Events</title>
-    <link rel="stylesheet" href="theme.css" />
-  <link
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet"/>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <title>Vendor Dashboard | Tathaastu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
   <style>
-    * { box-sizing: border-box; }
     body {
+      background: #111;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: #0f1115;
-      color: white;
+      padding: 0;
     }
-
     header {
-      padding: 16px 20px;
-      background: #16181e;
+      background: #222;
+      padding: 15px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-
     header h2 {
       margin: 0;
-      font-size: 20px;
     }
-
-    .logout-btn {
-      background: #00bcd4;
+    header button {
+      background: #ff4081;
       border: none;
-      padding: 8px 16px;
-      font-weight: bold;
-      border-radius: 8px;
+      padding: 10px 16px;
+      border-radius: 6px;
+      color: #fff;
       cursor: pointer;
-      color: #000;
+      font-size: 15px;
     }
-
-    #calendar {
-      max-width: 1000px;
-      margin: 30px auto;
-      background: #1c1e24;
+    main {
       padding: 20px;
-      border-radius: 12px;
     }
-
-    .fc .fc-daygrid-day.fc-day-today {
-      background-color: #282c34 !important;
-    }
-
-    .fc-event {
-      background-color: #00ff88 !important;
-      border: none;
-    }
-
-    .popup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      background: #1a1c21;
-      transform: translate(-50%, -50%);
+    .section {
+      background: #1a1a1a;
       padding: 20px;
-      border-radius: 12px;
-      z-index: 1000;
-      border: 1px solid #444;
-      width: 90%;
-      max-width: 400px;
+      border-radius: 10px;
+      margin-bottom: 20px;
     }
-
-    .popup h3 {
+    h3 {
       margin-top: 0;
     }
-
-    .popup ul {
-      padding-left: 20px;
-    }
-
-    .popup button {
-      margin-top: 15px;
-      padding: 6px 14px;
-      background: #00bcd4;
-      color: #000;
-      border: none;
+    .booking-item {
+      border: 1px solid #333;
+      padding: 10px;
       border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
+      margin-bottom: 10px;
     }
-
-    .overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-      z-index: 999;
+    label, input, select, textarea {
+      display: block;
+      margin-top: 10px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      font-size: 15px;
+    }
+    button.save-date, .btn-secondary, .btn-save-profile {
+      background-color: #ff4081;
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    #calendar {
+      margin-top: 20px;
+      background: #fff;
+      color: #000;
+      padding: 10px;
+      border-radius: 10px;
     }
   </style>
 </head>
 <body>
-
   <header>
     <h2>Vendor Dashboard</h2>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+    <button id="logoutBtn">Logout</button>
   </header>
+  <main>
+    <div class="section">
+      <h3>📥 Your Bookings</h3>
+      <div id="bookingList">Loading...</div>
+    </div><div class="section">
+  <h3>📅 Block Dates</h3>
+  <input type="date" id="blockDate" />
+  <button class="save-date" onclick="blockSelectedDate()">Block Date</button>
+</div>
 
+<div class="section">
+  <h3>📆 Booking Calendar</h3>
   <div id="calendar"></div>
+</div>
 
-  <div id="overlay" class="overlay" style="display: none;"></div>
-  <div id="popup" class="popup" style="display: none;">
-    <h3>Bookings on <span id="popup-date"></span></h3>
-    <ul id="booking-list"></ul>
-    <button onclick="closePopup()">Close</button>
-  </div>
+<div class="section">
+  <h3>🧑‍💼 Edit Vendor Profile</h3>
+  <label>Vendor Type</label>
+  <select id="vendorType">
+    <option value="DJ">DJ</option>
+    <option value="Photographer">Photographer</option>
+    <option value="Decorator">Decorator</option>
+    <option value="Other">Other</option>
+  </select>
+  <label>Business Name</label>
+  <input type="text" id="vendorName">
+  <label>Location</label>
+  <input type="text" id="vendorLocation">
+  <label>Description</label>
+  <textarea id="vendorDescription" rows="3"></textarea>
+  <button class="btn-save-profile" onclick="saveVendorProfile()">Save Profile</button>
+</div>
 
-  <script>
+<div class="section" style="text-align:center">
+  <h3>➕ Add More DJs / Services</h3>
+  <button class="btn-secondary" onclick="window.location.href='vendor-profile-setup.html'">Add New</button>
+</div>
+
+  </main>  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+    import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-database.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+    import { Calendar } from "https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyCj6rSxY--VUWioNHIHrw8kzf7C2i-f990",
       authDomain: "thaastu-events.firebaseapp.com",
@@ -129,75 +136,116 @@
       messagingSenderId: "1044759719995",
       appId: "1:1044759719995:web:c02253409e40b36c2aec1e"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
 
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
     let vendorUID = null;
+    let calendar;
 
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        vendorUID = user.uid;
-        initCalendar();
-      } else {
-        window.location.href = "login.html";
-      }
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      signOut(auth).then(() => window.location.href = "login.html");
     });
 
-    function logout() {
-      firebase.auth().signOut().then(() => {
-        window.location.href = "login.html";
-      });
-    }
+    onAuthStateChanged(auth, user => {
+      if (!user) return window.location.href = "login.html";
+      vendorUID = user.uid;
+      loadBookings();
+      setupCalendar();
+      loadProfile();
+    });
 
-    function closePopup() {
-      document.getElementById("overlay").style.display = "none";
-      document.getElementById("popup").style.display = "none";
-    }
+    function loadBookings() {
+      const bookingRef = ref(db, "bookings");
+      onValue(bookingRef, (snapshot) => {
+        const bookings = snapshot.val();
+        const list = document.getElementById("bookingList");
+        list.innerHTML = "";
+        let count = 0;
 
-    function showPopup(dateStr, bookings) {
-      document.getElementById("popup-date").textContent = dateStr;
-      const ul = document.getElementById("booking-list");
-      ul.innerHTML = "";
-      bookings.forEach(b => {
-        const li = document.createElement("li");
-        li.textContent = `${b.eventType} by ${b.customerName} @ ${b.date}`;
-        ul.appendChild(li);
-      });
-      document.getElementById("overlay").style.display = "block";
-      document.getElementById("popup").style.display = "block";
-    }
-
-    function initCalendar() {
-      const calendarEl = document.getElementById("calendar");
-      const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        themeSystem: 'standard',
-        eventClick: function(info) {
-          const dateStr = info.event.startStr;
-          db.ref(`bookings/${vendorUID}`).orderByChild("date").equalTo(dateStr).once("value").then(snap => {
-            const bookings = [];
-            snap.forEach(child => bookings.push(child.val()));
-            showPopup(dateStr, bookings);
-          });
-        },
-        events: async function(fetchInfo, successCallback, failureCallback) {
-          const snap = await db.ref(`bookings/${vendorUID}`).once("value");
-          const events = [];
-          snap.forEach(child => {
-            const data = child.val();
-            events.push({
-              title: "✔ Booking",
-              start: data.date,
-              allDay: true
-            });
-          });
-          successCallback(events);
+        for (let id in bookings) {
+          const b = bookings[id];
+          if (b.vendorId === vendorUID) {
+            count++;
+            const div = document.createElement("div");
+            div.className = "booking-item";
+            div.innerHTML = `
+              <strong>${b.eventType}</strong><br/>
+              <span>Date: ${b.date}</span><br/>
+              <span>Customer: ${b.name} (${b.email})</span><br/>
+              <label>Status:</label>
+              <select data-id="${id}" onchange="updateStatus(this)">
+                <option value="pending" ${b.status === "pending" ? "selected" : ""}>Pending</option>
+                <option value="accepted" ${b.status === "accepted" ? "selected" : ""}>Accepted</option>
+                <option value="cancelled" ${b.status === "cancelled" ? "selected" : ""}>Cancelled</option>
+              </select>
+            `;
+            list.appendChild(div);
+          }
         }
+
+        if (count === 0) list.innerHTML = "No bookings yet.";
+      });
+    }
+
+    window.updateStatus = function (selectEl) {
+      set(ref(db, `bookings/${selectEl.dataset.id}/status`), selectEl.value);
+    }
+
+    function setupCalendar() {
+      const calendarEl = document.getElementById('calendar');
+      calendar = new Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        events: [],
+        height: 500
       });
       calendar.render();
+      loadBlockedDates();
     }
-  </script>
-    <script src="theme-toggle.js"></script>
-</body>
+
+    function loadBlockedDates() {
+      const blockRef = ref(db, `vendors/${vendorUID}/blockedDates`);
+      onValue(blockRef, (snapshot) => {
+        const data = snapshot.val();
+        const events = [];
+        for (let key in data) {
+          events.push({ title: "Blocked", start: data[key], color: "red" });
+        }
+        calendar.removeAllEvents();
+        calendar.addEventSource(events);
+      });
+    }
+
+    window.blockSelectedDate = async () => {
+      const selected = document.getElementById("blockDate").value;
+      if (!selected) return alert("Please select a date.");
+      const blockRef = ref(db, `vendors/${vendorUID}/blockedDates`);
+      const newRef = push(blockRef);
+      await set(newRef, selected);
+    };
+
+    function loadProfile() {
+      const pRef = ref(db, `vendors/${vendorUID}/profile`);
+      onValue(pRef, (snap) => {
+        const d = snap.val();
+        if (!d) return;
+        document.getElementById("vendorType").value = d.type || "DJ";
+        document.getElementById("vendorName").value = d.name || "";
+        document.getElementById("vendorLocation").value = d.location || "";
+        document.getElementById("vendorDescription").value = d.description || "";
+      });
+    }
+
+    window.saveVendorProfile = () => {
+      const type = document.getElementById("vendorType").value;
+      const name = document.getElementById("vendorName").value;
+      const location = document.getElementById("vendorLocation").value;
+      const description = document.getElementById("vendorDescription").value;
+
+      const profile = { type, name, location, description };
+      set(ref(db, `vendors/${vendorUID}/profile`), profile).then(() => {
+        alert("Profile updated successfully!");
+      });
+    };
+  </script></body>
 </html>

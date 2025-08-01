@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rate Vendor | Tathaastu Events</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      margin: 0;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background-color: #1f1f1f;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    textarea, input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      background: #2a2a2a;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      resize: vertical;
+    }
+    .stars {
+      display: flex;
+      gap: 5px;
+      font-size: 24px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+    .stars span {
+      color: #555;
+    }
+    .stars span.selected {
+      color: gold;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      background-color: #ff4081;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #e73370;
+    }
+    #msg {
+      text-align: center;
+      margin-top: 15px;
+      color: lightgreen;
+    }
+  </style>
+</head>
+<body>
+  <h2>Rate and Review</h2>
+  <div class="container">
+    <label for="stars">Your Rating:</label>
+    <div class="stars" id="starContainer">
+      <span data-value="1">&#9733;</span>
+      <span data-value="2">&#9733;</span>
+      <span data-value="3">&#9733;</span>
+      <span data-value="4">&#9733;</span>
+      <span data-value="5">&#9733;</span>
+    </div>
+
+    <label for="review">Write a Review:</label>
+    <textarea id="review" rows="4" placeholder="Share your experience..."></textarea>
+
+    <label for="image">Upload Images (optional):</label>
+    <input type="file" id="imageUpload" accept="image/png, image/jpeg" multiple />
+
+    <button id="submitBtn">Submit Review</button>
+    <div id="msg"></div>
+  </div>
+
+  <!-- Firebase Scripts -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-database.js";
+    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCj6rSxY--VUWioNHIHrw8kzf7C2i-f990",
+      authDomain: "thaastu-events.firebaseapp.com",
+      databaseURL: "https://thaastu-events-default-rtdb.firebaseio.com",
+      projectId: "thaastu-events",
+      storageBucket: "thaastu-events.appspot.com",
+      messagingSenderId: "1044759719995",
+      appId: "1:1044759719995:web:c02253409e40b36c2aec1e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const vendorId = urlParams.get('id');
+    if (!vendorId) {
+      alert("No vendor selected to rate!");
+      window.location.href = "explore.html";
+    }
+
+    let selectedRating = 0;
+    const stars = document.querySelectorAll('#starContainer span');
+    stars.forEach(star => {
+      star.addEventListener('click', () => {
+        selectedRating = parseInt(star.dataset.value);
+        stars.forEach(s => s.classList.remove('selected'));
+        for (let i = 0; i < selectedRating; i++) {
+          stars[i].classList.add('selected');
+        }
+      });
+    });
+
+    document.getElementById('submitBtn').addEventListener('click', async () => {
+      const reviewText = document.getElementById('review').value.trim();
+      const images = document.getElementById('imageUpload').files;
+      const msgDiv = document.getElementById('msg');
+
+      if (selectedRating === 0 || reviewText.length < 5) {
+        msgDiv.style.color = 'red';
+        msgDiv.innerText = "Please select rating and write a proper review.";
+        return;
+      }
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          alert("You must be logged in to submit a review.");
+          window.location.href = "login.html";
+          return;
+        }
+
+        msgDiv.innerText = "Submitting...";
+
+        let imageUrls = [];
+
+        for (let file of images) {
+          const imgRef = sRef(storage, `reviews/${vendorId}/${Date.now()}-${file.name}`);
+          const snapshot = await uploadBytes(imgRef, file);
+          const downloadURL = await getDownloadURL(snapshot.ref);
+          imageUrls.push(downloadURL);
+        }
+
+        const reviewRef = ref(db, `reviews/${vendorId}`);
+        await push(reviewRef, {
+          userId: user.uid,
+          userName: user.displayName || "Anonymous",
+          rating: selectedRating,
+          review: reviewText,
+          images: imageUrls,
+          timestamp: Date.now()
+        });
+
+        msgDiv.innerText = "Thank you for your feedback!";
+        setTimeout(() => {
+          window.location.href = `dj-profile.html?id=${vendorId}`;
+        }, 2000);
+      });
+    });
+  </script>
+</body>
+</html>

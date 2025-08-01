@@ -3,102 +3,111 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vendor Profile Setup | Tathaastu Events</title>
-    <link rel="stylesheet" href="theme.css" />
-  <link
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <title>Vendor Profile Setup | Tathaastu</title>
   <style>
-    * { box-sizing: border-box; }
     body {
-      margin: 0;
+      background: #111;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
       padding: 20px;
-      font-family: 'Inter', sans-serif;
-      background-color: #0f1115;
-      color: white;
     }
-
     h2 {
       text-align: center;
       margin-bottom: 20px;
     }
-
     form {
       max-width: 500px;
       margin: auto;
-      background-color: #16181e;
+      background-color: #1e1e1e;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(226, 255, 0, 0.1);
+      box-shadow: 0 0 10px #000;
     }
-
     input, textarea, select {
       width: 100%;
-      margin-bottom: 14px;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      background-color: #2c2f36;
-      color: white;
-    }
-
-    input[type="file"] {
-      background: transparent;
-      padding: 0;
-    }
-
-    button {
-      width: 100%;
       padding: 12px;
-      background-color: #00bcd4;
-      color: black;
-      font-weight: 600;
+      margin-bottom: 15px;
+      border-radius: 6px;
       border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 10px;
+      font-size: 16px;
+      background: #222;
+      color: #fff;
     }
-
-    .msg {
+    label {
+      margin-bottom: 5px;
+      display: block;
+    }
+    button {
+      padding: 12px;
+      background-color: #ff4081;
+      border: none;
+      color: white;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #e73370;
+    }
+    .preview {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      margin-bottom: 20px;
+    }
+    .preview img, .preview video {
+      height: 100px;
+      border-radius: 8px;
+    }
+    .loader {
+      display: none;
       text-align: center;
-      margin-top: 16px;
-      font-weight: bold;
-      color: #00bcd4;
+      margin: 15px 0;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
 
-  <h2>🎯 Set Up Your Vendor Profile</h2>
+  <h2>Vendor Profile Setup</h2>
+  <div class="loader" id="loader">Saving your profile, please wait...</div>
 
   <form id="setupForm">
-    <input type="text" id="name" placeholder="Your Name / Brand Name" required />
-    <input type="text" id="location" placeholder="Location (e.g. Delhi, Mumbai)" required />
-    
+    <label>Your Name</label>
+    <input type="text" id="name" placeholder="Your Name" required />
+
+    <label>Location</label>
+    <input type="text" id="location" placeholder="e.g., Delhi" required />
+
+    <label>Category</label>
     <select id="category" required>
       <option value="">Select Category</option>
       <option value="DJ">DJ</option>
       <option value="Decorator">Decorator</option>
     </select>
 
-    <textarea id="description" placeholder="Description about your services" rows="4" required></textarea>
+    <label>Price Range (₹)</label>
+    <input type="text" id="price" placeholder="e.g., 5000 - 20000" required />
 
-    <input type="number" id="silverPlan" placeholder="Silver Plan Price ₹" required />
-    <input type="number" id="goldPlan" placeholder="Gold Plan Price ₹" required />
-    <input type="number" id="premiumPlan" placeholder="Premium Plan Price ₹" required />
+    <label>Upload Photos (Max 5)</label>
+    <input type="file" id="photoUpload" accept="image/*" multiple />
+    <div class="preview" id="photoPreview"></div>
 
-    <label>Select 4–5 Photos:</label>
-    <input type="file" id="photoInput" accept="image/*" multiple required />
+    <label>Upload Videos (Max 3)</label>
+    <input type="file" id="videoUpload" accept="video/*" multiple />
+    <div class="preview" id="videoPreview"></div>
 
-    <button type="submit">Submit Profile</button>
-    <div class="msg" id="msgBox"></div>
+    <button type="submit">Save Profile</button>
   </form>
 
-  <script>
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-database.js";
+    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-storage.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyCj6rSxY--VUWioNHIHrw8kzf7C2i-f990",
       authDomain: "thaastu-events.firebaseapp.com",
@@ -109,63 +118,93 @@
       appId: "1:1044759719995:web:c02253409e40b36c2aec1e"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
-    const storage = firebase.storage();
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+    const auth = getAuth(app);
 
-    const form = document.getElementById("setupForm");
-    const photoInput = document.getElementById("photoInput");
-    const msgBox = document.getElementById("msgBox");
+    const setupForm = document.getElementById("setupForm");
+    const loader = document.getElementById("loader");
+    const photoUpload = document.getElementById("photoUpload");
+    const videoUpload = document.getElementById("videoUpload");
+    const photoPreview = document.getElementById("photoPreview");
+    const videoPreview = document.getElementById("videoPreview");
 
-    let selectedFiles = [];
-
-    photoInput.addEventListener("change", (e) => {
-      selectedFiles = Array.from(e.target.files);
+    photoUpload.addEventListener("change", () => {
+      photoPreview.innerHTML = "";
+      Array.from(photoUpload.files).forEach(file => {
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(file);
+        photoPreview.appendChild(img);
+      });
     });
 
-    form.addEventListener("submit", async (e) => {
+    videoUpload.addEventListener("change", () => {
+      videoPreview.innerHTML = "";
+      Array.from(videoUpload.files).forEach(file => {
+        const vid = document.createElement("video");
+        vid.src = URL.createObjectURL(file);
+        vid.controls = true;
+        videoPreview.appendChild(vid);
+      });
+    });
+
+    setupForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const user = auth.currentUser;
-      if (!user) {
-        alert("Please login first.");
-        return;
-      }
+      loader.style.display = "block";
 
-      const uid = user.uid;
-      const vendorData = {
-        name: document.getElementById("name").value,
-        location: document.getElementById("location").value,
-        category: document.getElementById("category").value,
-        description: document.getElementById("description").value,
-        plans: {
-          silver: document.getElementById("silverPlan").value,
-          gold: document.getElementById("goldPlan").value,
-          premium: document.getElementById("premiumPlan").value
-        },
-        photos: [],
-        bookings: {}  // future booking calendar
-      };
+      const name = document.getElementById("name").value.trim();
+      const location = document.getElementById("location").value.trim();
+      const category = document.getElementById("category").value;
+      const price = document.getElementById("price").value.trim();
 
-      msgBox.innerText = "Uploading images and saving profile...";
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          alert("Please login first.");
+          loader.style.display = "none";
+          window.location.href = "login.html";
+          return;
+        }
 
-      for (let i = 0; i < selectedFiles.length; i++) {
-        const file = selectedFiles[i];
-        const ref = storage.ref(`vendors/${uid}/img${i}`);
-        await ref.put(file);
-        const url = await ref.getDownloadURL();
-        vendorData.photos.push(url);
-      }
+        const uid = user.uid;
+        const imageFiles = Array.from(photoUpload.files).slice(0, 5);
+        const videoFiles = Array.from(videoUpload.files).slice(0, 3);
 
-      await db.ref("vendors/" + uid).set(vendorData);
+        const imageUrls = [];
+        const videoUrls = [];
 
-      msgBox.innerText = "✅ Profile created successfully! Redirecting to dashboard...";
-      setTimeout(() => {
-        window.location.href = "vendor-dashboard.html";
-      }, 2000);
+        for (let i = 0; i < imageFiles.length; i++) {
+          const file = imageFiles[i];
+          const storageRef = sRef(storage, `vendors/${uid}/images/${file.name}`);
+          await uploadBytes(storageRef, file);
+          const url = await getDownloadURL(storageRef);
+          imageUrls.push(url);
+        }
+
+        for (let i = 0; i < videoFiles.length; i++) {
+          const file = videoFiles[i];
+          const storageRef = sRef(storage, `vendors/${uid}/videos/${file.name}`);
+          await uploadBytes(storageRef, file);
+          const url = await getDownloadURL(storageRef);
+          videoUrls.push(url);
+        }
+
+        const vendorData = {
+          name,
+          location,
+          category,
+          price,
+          images: imageUrls,
+          videos: videoUrls
+        };
+
+        await set(ref(db, "vendors/" + uid), vendorData);
+        loader.innerText = "Profile saved. Redirecting...";
+        setTimeout(() => {
+          window.location.href = "vendor-dashboard.html";
+        }, 1500);
+      });
     });
   </script>
-  <script src="theme-toggle.js"></script>
-
 </body>
 </html>

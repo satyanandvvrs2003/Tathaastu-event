@@ -4,163 +4,118 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login | Tathaastu Events</title>
-    <link rel="stylesheet" href="theme.css" />
-  <link
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
-      font-family: 'Inter', sans-serif;
-      background: #0b0c10;
-      color: #fff;
+      background-color: #121212;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
       display: flex;
-      align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-      flex-direction: column;
-    }
-
-    h1 {
-      font-size: 32px;
-      margin-bottom: 20px;
-      color: #00bcd4;
-      text-align: center;
-    }
-
-    .form-box {
-      background: #1a1c22;
-      padding: 30px 25px;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 360px;
-      box-shadow: 0 0 12px rgba(255, 255, 255, 0.05);
-      display: flex;
-      flex-direction: column;
       align-items: center;
+      height: 100vh;
+      margin: 0;
     }
-
-    input {
+    .container {
+      background-color: #1e1e1e;
+      padding: 30px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 0 15px rgba(255,255,255,0.05);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #ff4081;
+    }
+    input, select {
       width: 100%;
       padding: 12px;
       margin: 10px 0;
+      border: none;
       border-radius: 8px;
-      border: none;
-      background: #2c2f36;
-      color: white;
-      font-size: 15px;
-    }
-
-    input:focus {
-      outline: 2px solid #00bcd4;
-    }
-
-    button {
-      width: 100%;
-      background: #00bcd4;
-      color: #000;
-      padding: 12px;
-      font-weight: 600;
-      border: none;
-      border-radius: 50px;
       font-size: 16px;
+      outline: none;
+    }
+    .btn {
+      background-color: #ff4081;
+      color: white;
+      padding: 12px;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
+      font-size: 16px;
       margin-top: 10px;
     }
-
-    button:hover {
-      background: #d1ef00;
+    .btn:hover {
+      background-color: #e73370;
     }
-
     .link {
-      margin-top: 18px;
       text-align: center;
+      margin-top: 15px;
       font-size: 14px;
     }
-
     .link a {
-      color: #00bcd4;
+      color: #ff4081;
       text-decoration: none;
-      font-weight: 500;
-    }
-
-    .error {
-      color: #ff6b6b;
-      font-size: 14px;
-      margin-bottom: 10px;
-      text-align: center;
-    }
-
-    .loader {
-      display: none;
-      margin: 15px auto 0;
-      border: 4px solid #2c2f36;
-      border-top: 4px solid #00bcd4;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
-
-  <h1>Hey ! Welcome To Tathaastu</h1>
-
-  <div class="form-box">
-    <div class="error" id="error"></div>
-    <input type="email" id="email" placeholder="Email address" required />
+  <div class="container">
+    <h2>Login</h2>
+    <select id="role">
+      <option value="customer">Login as Customer</option>
+      <option value="vendor">Login as Vendor</option>
+    </select>
+    <input type="email" id="email" placeholder="Email" required />
     <input type="password" id="password" placeholder="Password" required />
-    <button onclick="login()">Login</button>
-    <div class="loader" id="loader"></div>
-    <div class="link">Don't have an account? <a href="signup.html">Sign up</a></div>
+    <button class="btn" id="loginBtn">Login</button>
+    <div class="link">Don't have an account? <a href="signup.html">Signup</a></div>
   </div>
 
-  <script>
-    // ✅ Live Firebase Config from your setup
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+
     const firebaseConfig = {
-      apiKey: "AIzaSyAxUO9OYPtljUCM8DxyvS19Nf9AoXHJPdE",
-      authDomain: "tathaastu-events.firebaseapp.com",
-      databaseURL: "https://tathaastu-events-default-rtdb.firebaseio.com",
-      projectId: "tathaastu-events",
-      storageBucket: "tathaastu-events.appspot.com",
-      messagingSenderId: "24858733283",
-      appId: "1:24858733283:web:33cf1b1ffad785387d2411"
+      apiKey: "AIzaSyCj6rSxY--VUWioNHIHrw8kzf7C2i-f990",
+      authDomain: "thaastu-events.firebaseapp.com",
+      projectId: "thaastu-events",
+      storageBucket: "thaastu-events.appspot.com",
+      messagingSenderId: "1044759719995",
+      appId: "1:1044759719995:web:c02253409e40b36c2aec1e"
     };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
 
-    function login() {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const errorDiv = document.getElementById('error');
-      const loader = document.getElementById('loader');
-      errorDiv.innerText = "";
-      loader.style.display = "block";
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-          loader.style.display = "none";
-          window.location.href = "explore.html";
+    const loginBtn = document.getElementById("loginBtn");
+
+    loginBtn.addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const role = document.getElementById("role").value;
+
+      if (!email || !password) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          // Redirect based on role
+          if (role === "vendor") {
+            window.location.href = "vendor-dashboard.html";
+          } else {
+            window.location.href = "explore.html";
+          }
         })
         .catch((error) => {
-          loader.style.display = "none";
-          errorDiv.innerText = error.message;
+          alert("Login failed: " + error.message);
         });
-    }
+    });
   </script>
-  <script src="theme-toggle.js"></script>
-  
 </body>
 </html>
