@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vendor Profile Setup | Tathaastu Events</title>
+    <link rel="stylesheet" href="theme.css" />
+  <link
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Inter', sans-serif;
+      background-color: #0f1115;
+      color: white;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    form {
+      max-width: 500px;
+      margin: auto;
+      background-color: #16181e;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(226, 255, 0, 0.1);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      margin-bottom: 14px;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      background-color: #2c2f36;
+      color: white;
+    }
+
+    input[type="file"] {
+      background: transparent;
+      padding: 0;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #00bcd4;
+      color: black;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .msg {
+      text-align: center;
+      margin-top: 16px;
+      font-weight: bold;
+      color: #00bcd4;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🎯 Set Up Your Vendor Profile</h2>
+
+  <form id="setupForm">
+    <input type="text" id="name" placeholder="Your Name / Brand Name" required />
+    <input type="text" id="location" placeholder="Location (e.g. Delhi, Mumbai)" required />
+    
+    <select id="category" required>
+      <option value="">Select Category</option>
+      <option value="DJ">DJ</option>
+      <option value="Decorator">Decorator</option>
+    </select>
+
+    <textarea id="description" placeholder="Description about your services" rows="4" required></textarea>
+
+    <input type="number" id="silverPlan" placeholder="Silver Plan Price ₹" required />
+    <input type="number" id="goldPlan" placeholder="Gold Plan Price ₹" required />
+    <input type="number" id="premiumPlan" placeholder="Premium Plan Price ₹" required />
+
+    <label>Select 4–5 Photos:</label>
+    <input type="file" id="photoInput" accept="image/*" multiple required />
+
+    <button type="submit">Submit Profile</button>
+    <div class="msg" id="msgBox"></div>
+  </form>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCj6rSxY--VUWioNHIHrw8kzf7C2i-f990",
+      authDomain: "thaastu-events.firebaseapp.com",
+      databaseURL: "https://thaastu-events-default-rtdb.firebaseio.com",
+      projectId: "thaastu-events",
+      storageBucket: "thaastu-events.appspot.com",
+      messagingSenderId: "1044759719995",
+      appId: "1:1044759719995:web:c02253409e40b36c2aec1e"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+    const storage = firebase.storage();
+
+    const form = document.getElementById("setupForm");
+    const photoInput = document.getElementById("photoInput");
+    const msgBox = document.getElementById("msgBox");
+
+    let selectedFiles = [];
+
+    photoInput.addEventListener("change", (e) => {
+      selectedFiles = Array.from(e.target.files);
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Please login first.");
+        return;
+      }
+
+      const uid = user.uid;
+      const vendorData = {
+        name: document.getElementById("name").value,
+        location: document.getElementById("location").value,
+        category: document.getElementById("category").value,
+        description: document.getElementById("description").value,
+        plans: {
+          silver: document.getElementById("silverPlan").value,
+          gold: document.getElementById("goldPlan").value,
+          premium: document.getElementById("premiumPlan").value
+        },
+        photos: [],
+        bookings: {}  // future booking calendar
+      };
+
+      msgBox.innerText = "Uploading images and saving profile...";
+
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const ref = storage.ref(`vendors/${uid}/img${i}`);
+        await ref.put(file);
+        const url = await ref.getDownloadURL();
+        vendorData.photos.push(url);
+      }
+
+      await db.ref("vendors/" + uid).set(vendorData);
+
+      msgBox.innerText = "✅ Profile created successfully! Redirecting to dashboard...";
+      setTimeout(() => {
+        window.location.href = "vendor-dashboard.html";
+      }, 2000);
+    });
+  </script>
+  <script src="theme-toggle.js"></script>
+
+</body>
+</html>

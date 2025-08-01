@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Book Now | Tathaastu Events</title>
+    <link rel="stylesheet" href="theme.css" />
+  <link
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #0f1115;
+      color: white;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    form {
+      max-width: 500px;
+      margin: auto;
+      background: #1c1e24;
+      padding: 20px;
+      border-radius: 12px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 6px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      background: #2c2f36;
+      color: white;
+      border: none;
+      border-radius: 6px;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background: #00bcd4;
+      color: black;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .loader {
+      margin: 20px auto;
+      border: 4px solid #2c2f36;
+      border-top: 4px solid #00bcd4;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Book Your Event</h2>
+  <form id="bookingForm">
+    <label>Your Name</label>
+    <input type="text" id="name" readonly/>
+
+    <label>Event Type</label>
+    <select id="eventType" required>
+      <option value="">Select Event Type</option>
+      <option>Wedding</option>
+      <option>Birthday</option>
+      <option>Corporate</option>
+      <option>College Fest</option>
+      <option>Other</option>
+    </select>
+
+    <label>Date</label>
+    <input type="date" id="eventDate" required/>
+
+    <label>Location</label>
+    <input type="text" id="location" placeholder="City or venue" required/>
+
+    <label>Additional Notes</label>
+    <textarea id="notes" rows="3" placeholder="Optional..."></textarea>
+
+    <div class="loader" id="loader"></div>
+    <button type="submit">Submit Booking</button>
+  </form>
+
+  <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCj6rSxY--VUWioNHIHrw8kzf7C2i-f990",
+      authDomain: "thaastu-events.firebaseapp.com",
+      databaseURL: "https://thaastu-events-default-rtdb.firebaseio.com",
+      projectId: "thaastu-events",
+      storageBucket: "thaastu-events.appspot.com",
+      messagingSenderId: "1044759719995",
+      appId: "1:1044759719995:web:c02253409e40b36c2aec1e"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const vendorUID = urlParams.get("vid");
+    const bookingForm = document.getElementById("bookingForm");
+    const loader = document.getElementById("loader");
+
+    let currentUser = null;
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        document.getElementById("name").value = user.displayName || "Customer";
+      } else {
+        alert("Please login to book an event.");
+        window.location.href = "login.html";
+      }
+    });
+
+    bookingForm.addEventListener("submit", e => {
+      e.preventDefault();
+      if (!vendorUID) return alert("Vendor not found!");
+
+      const data = {
+        customerUID: currentUser.uid,
+        customerName: currentUser.displayName || "Customer",
+        vendorUID,
+        eventType: document.getElementById("eventType").value,
+        date: document.getElementById("eventDate").value,
+        location: document.getElementById("location").value,
+        notes: document.getElementById("notes").value,
+        status: "Pending",
+        createdAt: new Date().toISOString()
+      };
+
+      loader.style.display = "block";
+
+      db.ref("bookings").push(data).then(() => {
+        loader.style.display = "none";
+        alert("Booking Successful!");
+        window.location.href = "my-bookings.html";
+      }).catch(err => {
+        loader.style.display = "none";
+        alert("Error booking: " + err.message);
+      });
+    });
+  </script>
+  <script src="theme-toggle.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Become a Vendor | Tathaastu Events</title>
+    <link rel="stylesheet" href="theme.css" />
+  <link
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .card {
+      background-color: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    h2 {
+      font-size: 24px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 25px;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    input:focus {
+      border-color: #222;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background-color: #00bcd4;
+      color: black;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 5px;
+    }
+
+    p {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    p a {
+      color: #1a73e8;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    p a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Become a Vendor</h2>
+    <input type="email" id="email" placeholder="Vendor Email" />
+    <input type="password" id="password" placeholder="Create Password" />
+    <button onclick="registerVendor()">Continue as Vendor</button>
+    <p>Already a vendor? <a href="#" onclick="redirectToLogin()">Login here</a></p>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCj6rSxY--VUWioNHIHrw8kzf7C2i-f990",
+      authDomain: "thaastu-events.firebaseapp.com",
+      projectId: "thaastu-events",
+      appId: "1:1044759719995:web:c02253409e40b36c2aec1e"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    function registerVendor() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      firebase.auth().createUserWithEmailAndPassword(email, password)
+        .then(() => {
+          alert("Vendor account created! Let's setup your shop.");
+          window.location.href = "vendor-profile-setup.html";
+        })
+        .catch(error => {
+          alert(error.message);
+        });
+    }
+
+    function redirectToLogin() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then(() => {
+          alert("Welcome back vendor!");
+          window.location.href = "vendor-profile-setup.html";
+        })
+        .catch(error => {
+          alert("Login failed. " + error.message);
+        });
+    }
+  </script>
+  <script src="theme-toggle.js"></script>
+</body>
+</html>

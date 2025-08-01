@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tathaastu Events</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet"/>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: #121212;
+      color: white;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.light-mode {
+      background-color: #f0f0f0;
+      color: #222;
+    }
+
+    body.menu-open::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      backdrop-filter: blur(4px);
+      background-color: rgba(0, 0, 0, 0.3);
+      z-index: 1001;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: #1f1f1f;
+      position: sticky;
+      top: 0;
+      z-index: 1002;
+    }
+
+    body.light-mode header {
+      background-color: #fff;
+    }
+
+    .menu-btn, .theme-toggle {
+      font-size: 1.5rem;
+      background: none;
+      border: none;
+      color: #00bcd4;
+      cursor: pointer;
+      z-index: 1003;
+    }
+
+    .menu {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 240px;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      padding: 2rem;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      z-index: 1004;
+    }
+
+    .menu.active {
+      transform: translateX(0);
+    }
+
+    .menu a {
+      display: block;
+      margin: 1.2rem 0;
+      text-decoration: none;
+      color: white;
+      font-size: 1.1rem;
+    }
+
+    .menu a:hover {
+      color: #00bcd4;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      text-align: center;
+      background: linear-gradient(-45deg, #1f1f1f, #212121, #1f1f1f);
+      background-size: 400% 400%;
+      animation: gradient 10s ease infinite;
+    }
+
+    body.light-mode main {
+      background: linear-gradient(-45deg, #fff, #e0e0e0, #fff);
+    }
+
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .hero-content {
+      max-width: 600px;
+    }
+
+    .hero-logo {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 2rem;
+      animation: pulse 3s infinite ease-in-out;
+      filter: drop-shadow(0 0 25px #00bcd4);
+      border: 4px solid #00bcd4;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      color: #00bcd4;
+      margin-bottom: 1rem;
+    }
+
+    body.light-mode h1 {
+      color: #007c91;
+    }
+
+    p {
+      font-size: 1.2rem;
+      color: #ccc;
+      margin-bottom: 2rem;
+    }
+
+    body.light-mode p {
+      color: #444;
+    }
+
+    .cta-button {
+      background-color: #00bcd4;
+      border: none;
+      padding: 14px 30px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .cta-button:hover {
+      background-color: #0097a7;
+      transform: scale(1.05);
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: #1a1a1a;
+      color: #aaa;
+    }
+
+    body.light-mode footer {
+      background: #f5f5f5;
+      color: #555;
+    }
+
+    #loader {
+      text-align: center;
+      padding: 1rem;
+      color: #00bcd4;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+     <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+  </header>
+
+  <div class="menu" id="menu">
+    <a href="login.html">Explore</a>
+    <a href="my-bookings.html">My Bookings</a>
+    <a href="vendor-profile-setup.html">Become a Vendor</a>
+    <a href="terms.html">Terms & Conditions</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="#" id="logoutBtn" onclick="logout()">Logout</a>
+    <a href="login.html" id="loginBtn">Login / Signup</a>
+  </div>
+
+  <main>
+    <div class="hero-content">
+      <img src="Img.png" alt="Tathaastu Logo" class="hero-logo" />
+      <h1>Tathaastu Events</h1>
+      <p>Your one-stop destination for DJ and Decoration services</p>
+      <button class="cta-button" onclick="handleExplore()"> Explore Now</button>
+      <div id="loader">Checking login status...</div>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 Tathaastu Events. All rights reserved.
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCq5K3AxoGEg8-zzkzWm8NLyMD8rBaIvw8",
+      authDomain: "tathaastu-events.firebaseapp.com",
+      databaseURL: "https://tathaastu-events-default-rtdb.firebaseio.com",
+      projectId: "tathaastu-events",
+      storageBucket: "tathaastu-events.appspot.com",
+      messagingSenderId: "709701247278",
+      appId: "1:709701247278:web:96a1241908c11efec2968b"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const menu = document.getElementById("menu");
+    const loader = document.getElementById("loader");
+
+    function toggleMenu() {
+      menu.classList.toggle("active");
+      document.body.classList.toggle("menu-open");
+    }
+
+    document.addEventListener("click", function (event) {
+      const menuBtn = document.querySelector(".menu-btn");
+      const themeBtn = document.querySelector(".theme-toggle");
+      if (!menu.contains(event.target) && !menuBtn.contains(event.target) && !themeBtn.contains(event.target)) {
+        menu.classList.remove("active");
+        document.body.classList.remove("menu-open");
+      }
+    });
+
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        alert("Logged out successfully.");
+        window.location.reload();
+      });
+    }
+
+    function handleExplore() {
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+          window.location.href = "explore.html";
+        } else {
+          window.location.href = "login.html";
+        }
+      });
+    }
+
+    loader.style.display = "block";
+    firebase.auth().onAuthStateChanged((user) => {
+      loader.style.display = "none";
+      const loginBtn = document.getElementById("loginBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+      if (user) {
+        loginBtn.style.display = "none";
+        logoutBtn.style.display = "block";
+      } else {
+        loginBtn.style.display = "block";
+        logoutBtn.style.display = "none";
+      }
+    });
+
+    function toggleTheme() {
+      document.body.classList.toggle('light-mode');
+    }
+  </script>
+
+</body>
+</html>

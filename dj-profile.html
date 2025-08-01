@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DJ Profile | Tathaastu Events</title>
+    <link rel="stylesheet" href="theme.css" />
+  <link
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: #121212;
+      color: white;
+    }
+    header {
+      background-color: #1f1f1f;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #00bcd4;
+    }
+    .logout-btn {
+      background-color: #00bcd4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .container {
+      padding: 2rem;
+      max-width: 900px;
+      margin: auto;
+    }
+    .vendor-name {
+      font-size: 2rem;
+      color: #00bcd4;
+      margin-bottom: 0.5rem;
+    }
+    .vendor-location {
+      color: #ccc;
+      margin-bottom: 1.5rem;
+    }
+    .image-gallery {
+      display: flex;
+      overflow-x: auto;
+      gap: 10px;
+      margin-bottom: 2rem;
+    }
+    .image-gallery img {
+      height: 200px;
+      border-radius: 10px;
+    }
+    .plan {
+      background: #1e1e1e;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+    .plan h3 {
+      color: #00bcd4;
+      margin-top: 0;
+    }
+    .book-btn {
+      background: #00bcd4;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 1rem;
+    }
+    .reviews {
+      margin-top: 2rem;
+    }
+    .review {
+      background: #1e1e1e;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+    .review .name {
+      font-weight: bold;
+      color: #00bcd4;
+    }
+    .review .rating {
+      color: gold;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Tathaastu</div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </header>
+
+  <div class="container">
+    <h2 class="vendor-name" id="vendorName">Loading...</h2>
+    <div class="vendor-location" id="vendorLocation"></div>
+    
+    <div class="image-gallery" id="imageGallery"></div>
+
+    <div class="plan">
+      <h3>Silver Plan</h3>
+      <div id="silverPlan">Loading...</div>
+    </div>
+    <div class="plan">
+      <h3>Gold Plan</h3>
+      <div id="goldPlan">Loading...</div>
+    </div>
+    <div class="plan">
+      <h3>Premium Plan</h3>
+      <div id="premiumPlan">Loading...</div>
+    </div>
+
+    <button class="book-btn" onclick="bookNow()">Book Now</button>
+
+    <div class="reviews">
+      <h2 style="color:#00bcd4;">Customer Reviews</h2>
+      <div id="reviewsContainer">Loading reviews...</div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD7cy3KTHCIm3AVMPXoiQhbm1vRrRSNWpU",
+      authDomain: "tathaastu-1d610.firebaseapp.com",
+      databaseURL: "https://tathaastu-1d610-default-rtdb.firebaseio.com",
+      projectId: "tathaastu-1d610",
+      storageBucket: "tathaastu-1d610.appspot.com",
+      messagingSenderId: "490217326237",
+      appId: "1:490217326237:web:9e0b9c89e33e8f24a930dd"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const vendorId = urlParams.get("uid");
+    const db = firebase.database();
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) window.location.href = "login.html";
+    });
+
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "index.html";
+      });
+    }
+
+    function loadVendor() {
+      db.ref("vendors/" + vendorId).once("value").then(snapshot => {
+        const data = snapshot.val();
+        if (!data) return;
+        document.getElementById("vendorName").textContent = data.name;
+        document.getElementById("vendorLocation").textContent = data.location;
+        document.getElementById("silverPlan").textContent = data.plans?.silver || "Not available";
+        document.getElementById("goldPlan").textContent = data.plans?.gold || "Not available";
+        document.getElementById("premiumPlan").textContent = data.plans?.premium || "Not available";
+
+        const gallery = document.getElementById("imageGallery");
+        gallery.innerHTML = "";
+        if (data.images && Array.isArray(data.images)) {
+          data.images.forEach(url => {
+            const img = document.createElement("img");
+            img.src = url;
+            gallery.appendChild(img);
+          });
+        }
+      });
+    }
+
+    function loadReviews() {
+      db.ref("reviews/" + vendorId).once("value").then(snapshot => {
+        const container = document.getElementById("reviewsContainer");
+        container.innerHTML = "";
+        if (!snapshot.exists()) {
+          container.textContent = "No reviews yet.";
+          return;
+        }
+        snapshot.forEach(child => {
+          const data = child.val();
+          const div = document.createElement("div");
+          div.className = "review";
+          div.innerHTML = `
+            <div class="name">${data.name}</div>
+            <div class="rating">Rating: ${data.rating} ⭐</div>
+            <div>${data.review}</div>
+          `;
+          container.appendChild(div);
+        });
+      });
+    }
+
+    function bookNow() {
+      window.location.href = `booking.html?uid=${vendorId}`;
+    }
+
+    loadVendor();
+    loadReviews();
+  </script>
+  <script src="theme-toggle.js"></script>
+  
+</body>
+</html>
